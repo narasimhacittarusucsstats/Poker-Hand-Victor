@@ -65,13 +65,13 @@ std::vector<std::vector<Card>> generateHands(const std::vector<Card>& tableCards
     for (int value = 2; value <= 14; ++value) {
         for (char suit : {'S', 'H', 'D', 'C'}) {
             bool cardAvailable = true;
-            for (const Card& card : tableCards) {
+            for (const Card& card : specificHand) {
                 if (card.value == value && card.suit == suit) {
                     cardAvailable = false;
                     break;
                 }
             }
-            for (const Card& card : specificHand) {
+            for (const Card& card : tableCards) {
                 if (card.value == value && card.suit == suit) {
                     cardAvailable = false;
                     break;
@@ -85,9 +85,20 @@ std::vector<std::vector<Card>> generateHands(const std::vector<Card>& tableCards
 
     std::vector<std::vector<Card>> beatingHands;
 
-    for (size_t i = 0; i < remainingDeck.size(); ++i) {
-        for (size_t j = i + 1; j < remainingDeck.size(); ++j) {
-            std::vector<Card> hand{remainingDeck[i], remainingDeck[j]};
+    // Generate hands including specific hand and table cards
+    for (const Card& card1 : specificHand) {
+        for (const Card& card2 : tableCards) {
+            std::vector<Card> hand = {card1, card2};
+            if (determineRank(hand) > determineRank(specificHand)) {
+                beatingHands.push_back(hand);
+            }
+        }
+    }
+
+    // Generate hands including table cards only
+    for (size_t i = 0; i < tableCards.size(); ++i) {
+        for (size_t j = i + 1; j < tableCards.size(); ++j) {
+            std::vector<Card> hand{tableCards[i], tableCards[j]};
             if (determineRank(hand) > determineRank(specificHand)) {
                 beatingHands.push_back(hand);
             }
@@ -96,6 +107,7 @@ std::vector<std::vector<Card>> generateHands(const std::vector<Card>& tableCards
 
     return beatingHands;
 }
+
 
 int main() {
     std::vector<Card> specificHand(2);
