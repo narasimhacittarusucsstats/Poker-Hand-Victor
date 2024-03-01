@@ -1,6 +1,50 @@
 #include <iostream>
+#include <SFML/Graphics.hpp>
 #include <vector>
 #include <algorithm>
+
+
+void printCardSFML(sf::RenderWindow& window, const Card& card, float x, float y) {
+    sf::RectangleShape cardShape(sf::Vector2f(60, 80));
+    cardShape.setFillColor(sf::Color::White);
+    cardShape.setOutlineThickness(2);
+    cardShape.setOutlineColor(sf::Color::Black);
+    cardShape.setPosition(x, y);
+    window.draw(cardShape);
+
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cerr << "Error loading font!" << std::endl;
+        return;
+    }
+
+    sf::Text valueText;
+    valueText.setFont(font);
+    valueText.setString(std::to_string(card.value));
+    valueText.setCharacterSize(30);
+    valueText.setFillColor(sf::Color::Black);
+    valueText.setPosition(x + 5, y + 5);
+    window.draw(valueText);
+
+    sf::Text suitText;
+    suitText.setFont(font);
+    suitText.setString(card.suit);
+    suitText.setCharacterSize(30);
+    suitText.setFillColor(sf::Color::Black);
+    suitText.setPosition(x + 35, y + 55);
+    window.draw(suitText);
+}
+
+void printHandsSFML(sf::RenderWindow& window, const std::vector<std::vector<Card>>& hands, float startX, float startY, float spacing) {
+    float x = startX;
+    float y = startY;
+    for (const auto& hand : hands) {
+        printCardSFML(window, hand[0], x, y);
+        printCardSFML(window, hand[1], x + 70, y);
+        y += spacing;
+    }
+}
+
 
 enum class Rank {
     HIGH_CARD,
@@ -110,7 +154,11 @@ std::vector<std::vector<Card>> generateHands(const std::vector<Card>& tableCards
 
 
 int main() {
+
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Poker Hands");
+
     std::vector<Card> specificHand(2);
+    
     std::cout << "Enter the value and suit of your first card (e.g., 10 S for 10 of Spades): ";
     std::cin >> specificHand[0].value >> specificHand[0].suit;
     if (specificHand[0].value == 1 || specificHand[0].value == 14) {
@@ -164,6 +212,22 @@ int main() {
     std::cout << "Hands that beat your hand after the river:" << std::endl;
     for (const auto& hand : beatingHands) {
         std::cout << "Hand: " << hand[0].value << hand[0].suit << ", " << hand[1].value << hand[1].suit << std::endl;
+    }
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Green);
+
+        printCardSFML(window, specificHand[0], 50, 200);
+        printCardSFML(window, specificHand[1], 130, 200);
+
+        
+        window.display();
     }
 
     return 0;
